@@ -73,6 +73,7 @@ func NewClient(enterpriseID, agentID, agentSecret string) *Client {
 	c.comm.client = c
 
 	c.Basic = (*basicService)(&c.comm)
+	c.Address = (*addressService)(&c.comm)
 	return c
 }
 

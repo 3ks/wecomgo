@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://qyapi.weixin.qq.com"
+	DefaultHost = "https://qyapi.weixin.qq.com"
 )
 
 // 企业微信所有接口的 Response 均有这两个字段，用于判断请求结果
@@ -40,18 +40,18 @@ type Client struct {
 	// 关于 access token 的生成可参考：https://work.weixin.qq.com/api/doc/90000/90135/91039
 	// 需要在初始化客户端时传入
 	enterpriseID string
-	agentID      string
 	agentSecret  string
 
-	// base url，默认为：https://qyapi.weixin.qq.com/
-	stringURL string
-	commURL   *url.URL
+	// host，默认为：https://qyapi.weixin.qq.com
+	host    string
+	hostURL *url.URL
 
 	// token 通过调用 API 获取
-	token *string
+	token    *string
+	expireAt int64
 
 	// lock
-	mu sync.Mutex
+	mu *sync.RWMutex
 
 	// 通用 service
 	comm service
@@ -59,55 +59,42 @@ type Client struct {
 	// HTTP Client
 	client *http.Client
 
-	// 对象
+	// TODO 对象
 	Basic   *basicService
 	Address *addressService
 }
 
-func NewClient(enterpriseID, agentID, agentSecret string) *Client {
+func NewClient(enterpriseID, agentSecret string, opts ...options) (client *Client, err error) {
 	c := &Client{
 		enterpriseID: enterpriseID,
-		agentID:      agentID,
 		agentSecret:  agentSecret,
-		stringURL:    DefaultBaseURL,
+		host:         DefaultHost,
+		mu:           &sync.RWMutex{},
 		client:       &http.Client{},
 	}
-	c.comm.client = c
 
-	c.Basic = (*basicService)(&c.comm)
-	c.Address = (*addressService)(&c.comm)
-	return c
-}
+	for k := range opts {
+		opts[k].applyOption(c)
+	}
 
-func NewClientWithBaseURL(enterpriseID, agentID, agentSecret, baseURL string) (client *Client, err error) {
-	// 解析 URL
 	var u *url.URL
-	u, err = url.Parse(baseURL)
+	u, err = url.Parse(c.host)
 	if err != nil {
 		return nil, err
 	}
+	c.hostURL = u
 
-	// 初始化客户端属性
-	c := &Client{
-		enterpriseID: enterpriseID,
-		agentID:      agentID,
-		agentSecret:  agentSecret,
-		stringURL:    baseURL,
-		commURL:      u,
-		client:       &http.Client{},
-	}
 	c.comm.client = c
-
-	// 赋值
 	c.Basic = (*basicService)(&c.comm)
 	c.Address = (*addressService)(&c.comm)
+
 	return c, nil
 }
 
 // queryString 支持两种写法："name=3ks&age=18" 或者 "name=guan", "age=18"
 func (c *Client) newRequest(httpMethod, path string, body interface{}, queryString ...string) (request *http.Request, err error) {
 	// base info
-	newURL := *c.commURL
+	newURL := *c.hostURL
 	newURL.Path = path
 
 	// qs
@@ -155,10 +142,12 @@ func (c *Client) doRequest(req *http.Request, result IBase) (err error) {
 			q.Set("access_token", c.getAccessToken())
 			req.URL.RawQuery = q.Encode()
 		}
+
 		resp, err := c.client.Do(req)
 		if err != nil {
 			return err
 		}
+
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			_ = resp.Body.Close()

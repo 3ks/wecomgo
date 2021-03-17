@@ -2,15 +2,29 @@
 package wecom
 
 import (
-	"fmt"
+	"context"
 	"net/http"
+)
+
+const (
+	pathUserCreate = "cgi-bin/user/create"
+	pathUserGet    = "cgi-bin/user/get"
+	pathUserUpdate = "cgi-bin/user/update"
+	pathUserDelete = "cgi-bin/user/delete"
 )
 
 type addressService service
 
+func (b *addressService) WithContext(ctx context.Context) *addressService {
+	return &addressService{
+		client: b.client,
+		ctx:    ctx,
+	}
+}
+
 // https://work.weixin.qq.com/api/doc/90000/90135/90195
 type User struct {
-	Base
+	baseResponse
 	Userid         string `json:"userid"` // 必填参数
 	Name           string `json:"name"`   // 必填参数
 	Alias          string `json:"alias,omitempty"`
@@ -63,194 +77,65 @@ type User struct {
 }
 
 type UserResp struct {
-	Base
+	baseResponse
 }
 
 // 通讯录：创建成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90195
 func (b *addressService) CreateMember(user *User) (result *UserResp, err error) {
-	// 调用 API
-	fnReq := func() (*UserResp, error) {
-		req, err := b.client.newRequest(http.MethodPost, "cgi-bin/user/create", user)
-		if err != nil {
-			return nil, err
-		}
-		result := new(UserResp)
-		err = b.client.doRequest(req, result)
-		if err != nil {
-			return nil, err
-		}
-		return result, nil
-	}
-
-	for i := 0; i < 3; i++ {
-		result, err = fnReq()
-		// 请求出错
-		if err != nil {
-			// 直接 break
-			break
-		}
-		// token 已过期
-		if b.client.tokenExpired(result) {
-			// 对于 token 过期的情况，重新获取 token
-			b.client.resetToken()
-			// 再次尝试
-			i--
-			continue
-		}
-		// 无错误，break
-		break
-	}
+	req, err := b.client.newRequest(http.MethodPost, pathUserCreate, user)
 	if err != nil {
-		return nil, fmt.Errorf("can not create member, err: %s\n", err.Error())
+		return nil, err
 	}
-	if result != nil {
-		return result, nil
-	} else {
-		return result, fmt.Errorf("get result with nil")
+	result = new(UserResp)
+	err = (*service)(b).doRequest(req, result)
+	if err != nil {
+		return nil, err
 	}
+	return result, nil
 }
 
 // 通讯录：读取（单个）成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90196
 func (b *addressService) GetMember(userID string) (result *User, err error) {
-	// 调用 API
-	fnReq := func() (*User, error) {
-		req, err := b.client.newRequest(http.MethodGet, "cgi-bin/user/get", nil, "userid="+userID)
-		if err != nil {
-			return nil, err
-		}
-		result := new(User)
-		err = b.client.doRequest(req, result)
-		if err != nil {
-			return nil, err
-		}
-		return result, nil
-	}
-
-	for i := 0; i < 3; i++ {
-		result, err = fnReq()
-		// 请求出错
-		if err != nil {
-			// 直接 break
-			break
-		}
-		// token 已过期
-		if b.client.tokenExpired(result) {
-			// 对于 token 过期的情况，重新获取 token
-			b.client.resetToken()
-			// 再次尝试
-			i--
-			continue
-		}
-		// 无错误，break
-		break
-	}
-	// 出错，返回 err
+	req, err := b.client.newRequest(http.MethodPost, pathUserGet, nil, "userid="+userID)
 	if err != nil {
-		return nil, fmt.Errorf("can not get member, err: %s\n", err.Error())
+		return nil, err
 	}
-	// result 不为空，return
-	if result != nil {
-		return result, nil
-	} else {
-		// 极端情况，不太可能出现
-		return result, fmt.Errorf("get result with nil")
+	result = new(User)
+	err = (*service)(b).doRequest(req, result)
+	if err != nil {
+		return nil, err
 	}
+	return result, nil
 }
 
 // 通讯录：更新成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90197
 func (b *addressService) UpdateMember(user *User) (result *UserResp, err error) {
-	// 调用 API
-	fnReq := func() (*UserResp, error) {
-		req, err := b.client.newRequest(http.MethodPost, "cgi-bin/user/update", user)
-		if err != nil {
-			return nil, err
-		}
-		result := new(UserResp)
-		err = b.client.doRequest(req, result)
-		if err != nil {
-			return nil, err
-		}
-		return result, nil
-	}
-
-	for i := 0; i < 3; i++ {
-		result, err = fnReq()
-		// 请求出错
-		if err != nil {
-			// 直接 break
-			break
-		}
-		// token 已过期
-		if b.client.tokenExpired(result) {
-			// 对于 token 过期的情况，重新获取 token
-			b.client.resetToken()
-			// 再次尝试
-			i--
-			continue
-		}
-		// 无错误，break
-		break
-	}
-	// 出错，返回 err
+	req, err := b.client.newRequest(http.MethodPost, pathUserUpdate, user)
 	if err != nil {
-		return nil, fmt.Errorf("can not update member, err: %s\n", err.Error())
+		return nil, err
 	}
-	// result 不为空，return
-	if result != nil {
-		return result, nil
-	} else {
-		// 极端情况，不太可能出现
-		return result, fmt.Errorf("get result with nil")
+	result = new(UserResp)
+	err = (*service)(b).doRequest(req, result)
+	if err != nil {
+		return nil, err
 	}
+	return result, nil
 }
 
 // 通讯录：删除成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90197
 func (b *addressService) DeleteMember(userID string) (result *UserResp, err error) {
-	// 调用 API
-	fnReq := func() (*UserResp, error) {
-		req, err := b.client.newRequest(http.MethodGet, "cgi-bin/user/delete", nil, "userid="+userID)
-		if err != nil {
-			return nil, err
-		}
-		result := new(UserResp)
-		err = b.client.doRequest(req, result)
-		if err != nil {
-			return nil, err
-		}
-		return result, nil
-	}
-
-	for i := 0; i < 3; i++ {
-		result, err = fnReq()
-		// 请求出错
-		if err != nil {
-			// 直接 break
-			break
-		}
-		// token 已过期
-		if b.client.tokenExpired(result) {
-			// 对于 token 过期的情况，重新获取 token
-			b.client.resetToken()
-			// 再次尝试
-			i--
-			continue
-		}
-		// 无错误，break
-		break
-	}
-	// 出错，返回 err
+	req, err := b.client.newRequest(http.MethodPost, pathUserDelete, nil, "userid="+userID)
 	if err != nil {
-		return nil, fmt.Errorf("can not delete member, err: %s\n", err.Error())
+		return nil, err
 	}
-	// result 不为空，return
-	if result != nil {
-		return result, nil
-	} else {
-		// 极端情况，不太可能出现
-		return result, fmt.Errorf("get result with nil")
+	result = new(UserResp)
+	err = (*service)(b).doRequest(req, result)
+	if err != nil {
+		return nil, err
 	}
+	return result, nil
 }

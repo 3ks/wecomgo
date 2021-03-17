@@ -2,16 +2,16 @@ package wecom
 
 import "net/http"
 
-// 目前支持两个 options，hostURL 和 HTTP Client
+// 目前支持两个 options，hostURL 和 HTTP client
 type options interface {
-	applyOption(*Client)
+	applyOption(*client)
 }
 
 type optHost struct {
 	Host string
 }
 
-func (o *optHost) applyOption(client *Client) {
+func (o *optHost) applyOption(client *client) {
 	client.host = o.Host
 }
 
@@ -25,7 +25,7 @@ type optHTTPClient struct {
 	Client *http.Client
 }
 
-func (o *optHTTPClient) applyOption(client *Client) {
+func (o *optHTTPClient) applyOption(client *client) {
 	client.client = o.Client
 }
 

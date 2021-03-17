@@ -3,6 +3,7 @@ package wecom
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,33 +13,33 @@ import (
 )
 
 const (
-	DefaultHost = "https://qyapi.weixin.qq.com"
+	defaultHost   = "https://qyapi.weixin.qq.com"
+	maxRetryTimes = 3
 )
 
 // 企业微信所有接口的 Response 均有这两个字段，用于判断请求结果
-type IBase interface {
+type iBaseResponse interface {
 	GetErrCode() int
 	GetErrMsg() string
 }
 
-// IBase 接口的基础实现
-type Base struct {
+// iBaseResponse 接口的基础实现
+type baseResponse struct {
 	ErrCode int    `json:"errcode"`
 	ErrMsg  string `json:"errmsg"`
 }
 
-func (b Base) GetErrCode() int {
+func (b baseResponse) GetErrCode() int {
 	return b.ErrCode
 }
 
-func (b Base) GetErrMsg() string {
+func (b baseResponse) GetErrMsg() string {
 	return b.ErrMsg
 }
 
 // 客户端
-type Client struct {
+type client struct {
 	// 关于 access token 的生成可参考：https://work.weixin.qq.com/api/doc/90000/90135/91039
-	// 需要在初始化客户端时传入
 	enterpriseID string
 	agentSecret  string
 
@@ -47,28 +48,30 @@ type Client struct {
 	hostURL *url.URL
 
 	// token 通过调用 API 获取
-	token    *string
+	token    string
 	expireAt int64
 
-	// lock
+	// lock，主要用于更新 token
 	mu *sync.RWMutex
 
-	// 通用 service
-	comm service
-
-	// HTTP Client
+	// HTTP client
 	client *http.Client
 
-	// TODO 对象
+	comm service
+
 	Basic   *basicService
 	Address *addressService
 }
 
-func NewClient(enterpriseID, agentSecret string, opts ...options) (client *Client, err error) {
-	c := &Client{
+func (c client) String() string {
+	return fmt.Sprintf("enterprise: %s\napi host:%s\n", c.enterpriseID, c.host)
+}
+
+func NewClient(enterpriseID, agentSecret string, opts ...options) (c *client, err error) {
+	c = &client{
 		enterpriseID: enterpriseID,
 		agentSecret:  agentSecret,
-		host:         DefaultHost,
+		host:         defaultHost,
 		mu:           &sync.RWMutex{},
 		client:       &http.Client{},
 	}
@@ -92,7 +95,7 @@ func NewClient(enterpriseID, agentSecret string, opts ...options) (client *Clien
 }
 
 // queryString 支持两种写法："name=3ks&age=18" 或者 "name=guan", "age=18"
-func (c *Client) newRequest(httpMethod, path string, body interface{}, queryString ...string) (request *http.Request, err error) {
+func (c *client) newRequest(httpMethod, path string, body interface{}, queryString ...string) (request *http.Request, err error) {
 	// base info
 	newURL := *c.hostURL
 	newURL.Path = path
@@ -126,18 +129,15 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 	// set header
 	if body != nil {
 		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("User-Agent", "WecomGo")
 	}
 
 	return request, nil
 }
 
-func (c *Client) setAK() {
-
-}
-
-func (c *Client) doRequest(req *http.Request, result IBase) (err error) {
+func (c *client) do(req *http.Request, result iBaseResponse) (err error) {
 	for {
-		if req.URL.Path != PathGetToken {
+		if req.URL.Path != pathGetToken {
 			q := req.URL.Query()
 			q.Set("access_token", c.getAccessToken())
 			req.URL.RawQuery = q.Encode()
@@ -161,10 +161,7 @@ func (c *Client) doRequest(req *http.Request, result IBase) (err error) {
 		}
 		// token 已过期
 		if c.tokenExpired(result) {
-			// 刷新 token
-			// TODO 锁
 			c.Basic.refreshAccessToken()
-			// 重试
 			continue
 		}
 		// 请求无异常，break
@@ -173,29 +170,20 @@ func (c *Client) doRequest(req *http.Request, result IBase) (err error) {
 }
 
 // 获取 token，如果 token 无效，则调用 API 获取 token
-func (c *Client) getAccessToken() string {
-	c.mu.Lock()
-	if c.token == nil || *c.token == "" {
+func (c *client) getAccessToken() string {
+	if c.token == "" {
 		c.Basic.refreshAccessToken()
 	}
-	c.mu.Unlock()
-
-	return *c.token
+	return c.token
 }
 
 // 判断错误码是否为 token 已过期
 // errcode: 42001 token 已过期
 // 企业微信错误码查询页面：https://open.work.weixin.qq.com/devtool/query?e=42001
 // 企业微信全局错误码：https://open.work.weixin.qq.com/api/doc/90000/90139/90313
-func (c *Client) tokenExpired(result IBase) bool {
+func (c *client) tokenExpired(result iBaseResponse) bool {
 	if result.GetErrCode() == 42001 {
 		return true
 	}
 	return false
-}
-
-func (c *Client) resetToken() {
-	c.mu.Lock()
-	c.token = nil
-	c.mu.Unlock()
 }

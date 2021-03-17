@@ -71,7 +71,7 @@ type UserResp struct {
 func (b *addressService) CreateMember(user *User) (result *UserResp, err error) {
 	// 调用 API
 	fnReq := func() (*UserResp, error) {
-		req, err := b.client.newRequest(http.MethodPost, fmt.Sprintf("user/create?access_token=%s", b.client.getAccessToken()), user)
+		req, err := b.client.newRequest(http.MethodPost, "cgi-bin/user/create", user)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +116,7 @@ func (b *addressService) CreateMember(user *User) (result *UserResp, err error) 
 func (b *addressService) GetMember(userID string) (result *User, err error) {
 	// 调用 API
 	fnReq := func() (*User, error) {
-		req, err := b.client.newRequest(http.MethodGet, fmt.Sprintf("user/get?access_token=%s&userid=%s", b.client.getAccessToken(), userID), nil)
+		req, err := b.client.newRequest(http.MethodGet, "cgi-bin/user/get", nil, "userid="+userID)
 		if err != nil {
 			return nil, err
 		}
@@ -164,7 +164,7 @@ func (b *addressService) GetMember(userID string) (result *User, err error) {
 func (b *addressService) UpdateMember(user *User) (result *UserResp, err error) {
 	// 调用 API
 	fnReq := func() (*UserResp, error) {
-		req, err := b.client.newRequest(http.MethodPost, fmt.Sprintf("user/update?access_token=%s", b.client.getAccessToken()), user)
+		req, err := b.client.newRequest(http.MethodPost, "cgi-bin/user/update", user)
 		if err != nil {
 			return nil, err
 		}
@@ -212,7 +212,7 @@ func (b *addressService) UpdateMember(user *User) (result *UserResp, err error) 
 func (b *addressService) DeleteMember(userID string) (result *UserResp, err error) {
 	// 调用 API
 	fnReq := func() (*UserResp, error) {
-		req, err := b.client.newRequest(http.MethodGet, fmt.Sprintf("user/delete?access_token=%s&userid=%s", b.client.getAccessToken(), userID), nil)
+		req, err := b.client.newRequest(http.MethodGet, "cgi-bin/user/delete", nil, "userid="+userID)
 		if err != nil {
 			return nil, err
 		}

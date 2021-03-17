@@ -19,8 +19,13 @@ type Basic struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
+const (
+	PathGetToken = "cgi-bin/gettoken" // 获取 token path
+)
+
 // 一般仅在 token 过期的情况下刷新 token
 // 参数要求及含义参考：https://work.weixin.qq.com/api/doc/90000/90135/91039
+// TODO 在 expires_in 前 10 秒刷新 token？
 func (b *basicService) refreshAccessToken() {
 	// 调用 API 获取 token
 	refresh := func() (*Basic, error) {

@@ -6,12 +6,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 )
 
 const (
-	DefaultBaseURL = "https://qyapi.weixin.qq.com/cgi-bin/"
+	DefaultBaseURL = "https://qyapi.weixin.qq.com"
 )
 
 // 企业微信所有接口的 Response 均有这两个字段，用于判断请求结果
@@ -42,8 +43,9 @@ type Client struct {
 	agentID      string
 	agentSecret  string
 
-	// base url，默认为：https://qyapi.weixin.qq.com/cgi-bin/
-	baseURL string
+	// base url，默认为：https://qyapi.weixin.qq.com/
+	stringURL string
+	commURL   *url.URL
 
 	// token 通过调用 API 获取
 	token *string
@@ -67,7 +69,7 @@ func NewClient(enterpriseID, agentID, agentSecret string) *Client {
 		enterpriseID: enterpriseID,
 		agentID:      agentID,
 		agentSecret:  agentSecret,
-		baseURL:      DefaultBaseURL,
+		stringURL:    DefaultBaseURL,
 		client:       &http.Client{},
 	}
 	c.comm.client = c
@@ -77,24 +79,47 @@ func NewClient(enterpriseID, agentID, agentSecret string) *Client {
 	return c
 }
 
-func NewClientWithBaseURL(enterpriseID, agentID, agentSecret, baseURL string) *Client {
+func NewClientWithBaseURL(enterpriseID, agentID, agentSecret, baseURL string) (client *Client, err error) {
+	// 解析 URL
+	var u *url.URL
+	u, err = url.Parse(baseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	// 初始化客户端属性
 	c := &Client{
 		enterpriseID: enterpriseID,
 		agentID:      agentID,
 		agentSecret:  agentSecret,
-		baseURL:      baseURL,
+		stringURL:    baseURL,
+		commURL:      u,
 		client:       &http.Client{},
 	}
 	c.comm.client = c
 
+	// 赋值
 	c.Basic = (*basicService)(&c.comm)
-	return c
+	c.Address = (*addressService)(&c.comm)
+	return c, nil
 }
 
-func (c *Client) newRequest(httpMethod, url string, body interface{}) (*http.Request, error) {
-	if strings.HasSuffix(c.baseURL, "/") && strings.HasPrefix(url, "/") {
-		url = strings.TrimPrefix(url, "/")
+// queryString 支持两种写法："name=3ks&age=18" 或者 "name=guan", "age=18"
+func (c *Client) newRequest(httpMethod, path string, body interface{}, queryString ...string) (request *http.Request, err error) {
+	// base info
+	newURL := *c.commURL
+	newURL.Path = path
+
+	// qs
+	if len(queryString) > 0 {
+		qs, err := url.ParseQuery(strings.Join(queryString, "&"))
+		if err != nil {
+			return nil, err
+		}
+		newURL.RawQuery = qs.Encode()
 	}
+
+	// body
 	var buf io.ReadWriter
 	if body != nil {
 		buf = &bytes.Buffer{}
@@ -105,32 +130,57 @@ func (c *Client) newRequest(httpMethod, url string, body interface{}) (*http.Req
 			return nil, err
 		}
 	}
-	req, err := http.NewRequest(httpMethod, url, buf)
+
+	// new request
+	request, err = http.NewRequest(httpMethod, newURL.String(), buf)
 	if err != nil {
 		return nil, err
 	}
-
+	// set header
 	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Content-Type", "application/json")
 	}
-	return req, nil
+
+	return request, nil
 }
 
-func (c *Client) doRequest(req *http.Request, result IBase) error {
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return err
+func (c *Client) setAK() {
+
+}
+
+func (c *Client) doRequest(req *http.Request, result IBase) (err error) {
+	for {
+		if req.URL.Path != PathGetToken {
+			q := req.URL.Query()
+			q.Set("access_token", c.getAccessToken())
+			req.URL.RawQuery = q.Encode()
+		}
+		resp, err := c.client.Do(req)
+		if err != nil {
+			return err
+		}
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			_ = resp.Body.Close()
+			return err
+		}
+		_ = resp.Body.Close()
+
+		err = json.Unmarshal(data, result)
+		if err != nil {
+			return err
+		}
+		// token 已过期
+		if c.tokenExpired(result) {
+			// 刷新 token
+			// TODO 锁
+			c.Basic.refreshAccessToken()
+			// 重试
+			continue
+		}
+		// 请求无异常，break
+		return nil
 	}
-	defer func() { _ = resp.Body.Close() }()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(data, result)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // 获取 token，如果 token 无效，则调用 API 获取 token

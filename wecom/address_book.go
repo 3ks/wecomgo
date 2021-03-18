@@ -11,6 +11,7 @@ const (
 	pathUserGet    = "/cgi-bin/user/get"
 	pathUserUpdate = "/cgi-bin/user/update"
 	pathUserDelete = "/cgi-bin/user/delete"
+	pathUserInvite = "/cgi-bin/batch/invite"
 )
 
 type addressService service
@@ -129,6 +130,26 @@ func (b *addressService) UpdateMember(user *User) (result *UserResp, err error) 
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90197
 func (b *addressService) DeleteMember(userID string) (result *UserResp, err error) {
 	req, err := b.client.newRequest(http.MethodPost, pathUserDelete, nil, "userid="+userID)
+	if err != nil {
+		return nil, err
+	}
+	result = new(UserResp)
+	err = (*service)(b).doRequest(req, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+type invite struct {
+	User []string `json:"user"`
+}
+
+// 通讯录：批量邀请成员
+// 参考链接：https://open.work.weixin.qq.com/api/doc/90000/90135/90975
+func (b *addressService) InviteMember(userID []string) (result *UserResp, err error) {
+	body := invite{User: userID}
+	req, err := b.client.newRequest(http.MethodPost, pathUserInvite, body)
 	if err != nil {
 		return nil, err
 	}

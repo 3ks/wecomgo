@@ -35,11 +35,11 @@ type User struct {
 	Gender         string `json:"gender,omitempty"`
 	Email          string `json:"email,omitempty"`
 	IsLeaderInDept []int  `json:"is_leader_in_dept,omitempty"`
-	Enable         int    `json:"enable,omitempty"`
+	Enable         *int   `json:"enable,omitempty"`
 	AvatarMediaid  string `json:"avatar_mediaid,omitempty"`
 	Telephone      string `json:"telephone,omitempty"`
 	Address        string `json:"address,omitempty"`
-	MainDepartment int    `json:"main_department,omitempty"`
+	MainDepartment *int   `json:"main_department,omitempty"`
 	Extattr        struct {
 		Attrs []struct {
 			Type int    `json:"type,omitempty"`

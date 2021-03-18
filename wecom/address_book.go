@@ -53,7 +53,7 @@ type User struct {
 			} `json:"web,omitempty,omitempty"`
 		} `json:"attrs,omitempty"`
 	} `json:"extattr,omitempty"`
-	ToInvite         bool   `json:"to_invite,omitempty"`
+	ToInvite         *bool  `json:"to_invite,omitempty"`
 	ExternalPosition string `json:"external_position,omitempty"`
 	ExternalProfile  struct {
 		ExternalCorpName string `json:"external_corp_name,omitempty"`

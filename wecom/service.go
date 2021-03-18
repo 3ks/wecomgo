@@ -16,10 +16,12 @@ func (s *service) doRequest(req *http.Request, result iBaseResponse) (err error)
 	}
 	err = s.client.do(req, result)
 	if err != nil {
-		select {
-		case <-s.ctx.Done():
-			return s.ctx.Err()
-		default:
+		if s.ctx != nil {
+			select {
+			case <-s.ctx.Done():
+				return s.ctx.Err()
+			default:
+			}
 		}
 		return err
 	}

@@ -25,8 +25,8 @@ type iBaseResponse interface {
 
 // iBaseResponse 接口的基础实现
 type baseResponse struct {
-	ErrCode int    `json:"errcode"`
-	ErrMsg  string `json:"errmsg"`
+	ErrCode int    `json:"errcode,omitempty"`
+	ErrMsg  string `json:"errmsg,omitempty"`
 }
 
 func (b baseResponse) GetErrCode() int {

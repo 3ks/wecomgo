@@ -25,8 +25,8 @@ func (b *addressService) WithContext(ctx context.Context) *addressService {
 // https://work.weixin.qq.com/api/doc/90000/90135/90195
 type User struct {
 	baseResponse
-	Userid         string `json:"userid"` // 必填参数
-	Name           string `json:"name"`   // 必填参数
+	Userid         string `json:"userid"`         // 必填参数
+	Name           string `json:"name,omitempty"` // 必填参数
 	Alias          string `json:"alias,omitempty"`
 	Mobile         string `json:"mobile,omitempty"`
 	Department     []int  `json:"department,omitempty"`

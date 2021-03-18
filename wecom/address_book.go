@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	pathUserCreate = "cgi-bin/user/create"
-	pathUserGet    = "cgi-bin/user/get"
-	pathUserUpdate = "cgi-bin/user/update"
-	pathUserDelete = "cgi-bin/user/delete"
+	pathUserCreate = "/cgi-bin/user/create"
+	pathUserGet    = "/cgi-bin/user/get"
+	pathUserUpdate = "/cgi-bin/user/update"
+	pathUserDelete = "/cgi-bin/user/delete"
 )
 
 type addressService service

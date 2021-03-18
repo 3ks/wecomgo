@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	pathGetToken = "cgi-bin/gettoken" // 获取 token path
+	pathGetToken = "/cgi-bin/gettoken" // 获取 token path
 )
 
 // 获取 Access Token：https://work.weixin.qq.com/api/doc/90000/90135/91039

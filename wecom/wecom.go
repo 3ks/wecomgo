@@ -38,7 +38,7 @@ func (b baseResponse) GetErrMsg() string {
 }
 
 // 客户端
-type client struct {
+type Client struct {
 	// 关于 access token 的生成可参考：https://work.weixin.qq.com/api/doc/90000/90135/91039
 	enterpriseID string
 	agentSecret  string
@@ -63,12 +63,12 @@ type client struct {
 	Address *addressService
 }
 
-func (c client) String() string {
+func (c Client) String() string {
 	return fmt.Sprintf("enterprise: %s\napi host:%s\n", c.enterpriseID, c.host)
 }
 
-func NewClient(enterpriseID, agentSecret string, opts ...options) (c *client, err error) {
-	c = &client{
+func NewClient(enterpriseID, agentSecret string, opts ...options) (c *Client, err error) {
+	c = &Client{
 		enterpriseID: enterpriseID,
 		agentSecret:  agentSecret,
 		host:         defaultHost,
@@ -95,7 +95,7 @@ func NewClient(enterpriseID, agentSecret string, opts ...options) (c *client, er
 }
 
 // queryString 支持两种写法："name=3ks&age=18" 或者 "name=guan", "age=18"
-func (c *client) newRequest(httpMethod, path string, body interface{}, queryString ...string) (request *http.Request, err error) {
+func (c *Client) newRequest(httpMethod, path string, body interface{}, queryString ...string) (request *http.Request, err error) {
 	// base info
 	newURL := *c.hostURL
 	newURL.Path = path
@@ -135,7 +135,7 @@ func (c *client) newRequest(httpMethod, path string, body interface{}, queryStri
 	return request, nil
 }
 
-func (c *client) do(req *http.Request, result iBaseResponse) (err error) {
+func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
 	for {
 		if req.URL.Path != pathGetToken {
 			q := req.URL.Query()
@@ -170,7 +170,7 @@ func (c *client) do(req *http.Request, result iBaseResponse) (err error) {
 }
 
 // 获取 token，如果 token 无效，则调用 API 获取 token
-func (c *client) getAccessToken() string {
+func (c *Client) getAccessToken() string {
 	if c.token == "" {
 		c.Basic.refreshAccessToken()
 	}
@@ -181,7 +181,7 @@ func (c *client) getAccessToken() string {
 // errcode: 42001 token 已过期
 // 企业微信错误码查询页面：https://open.work.weixin.qq.com/devtool/query?e=42001
 // 企业微信全局错误码：https://open.work.weixin.qq.com/api/doc/90000/90139/90313
-func (c *client) tokenExpired(result iBaseResponse) bool {
+func (c *Client) tokenExpired(result iBaseResponse) bool {
 	if result.GetErrCode() == 42001 {
 		return true
 	}

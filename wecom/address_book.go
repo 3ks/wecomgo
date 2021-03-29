@@ -3,15 +3,17 @@ package wecom
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
 const (
-	pathUserCreate = "/cgi-bin/user/create"
-	pathUserGet    = "/cgi-bin/user/get"
-	pathUserUpdate = "/cgi-bin/user/update"
-	pathUserDelete = "/cgi-bin/user/delete"
-	pathUserInvite = "/cgi-bin/batch/invite"
+	pathUserCreate     = "/cgi-bin/user/create"
+	pathUserGet        = "/cgi-bin/user/get"
+	pathUserUpdate     = "/cgi-bin/user/update"
+	pathUserDelete     = "/cgi-bin/user/delete"
+	pathUserInvite     = "/cgi-bin/batch/invite"
+	pathDepartmentList = "/cgi-bin/department/list"
 )
 
 type addressService service
@@ -154,6 +156,34 @@ func (b *addressService) InviteMember(userID []string) (result *UserResp, err er
 		return nil, err
 	}
 	result = new(UserResp)
+	err = (*service)(b).doRequest(req, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// 部门列表
+type DepartmentList struct {
+	baseResponse
+	Department []Department `json:"department"`
+}
+
+type Department struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Parentid int    `json:"parentid"`
+	Order    int    `json:"order"`
+}
+
+// 通讯录：获取部门列表
+// 参考链接：https://open.work.weixin.qq.com/api/doc/90000/90135/90208
+func (b *addressService) DepartmentList(departmentID int) (result *DepartmentList, err error) {
+	req, err := b.client.newRequest(http.MethodGet, pathDepartmentList, nil, fmt.Sprintf("id=%d", departmentID))
+	if err != nil {
+		return nil, err
+	}
+	result = new(DepartmentList)
 	err = (*service)(b).doRequest(req, result)
 	if err != nil {
 		return nil, err

@@ -28,55 +28,64 @@ func (b *addressService) WithContext(ctx context.Context) *addressService {
 // https://work.weixin.qq.com/api/doc/90000/90135/90195
 type User struct {
 	baseResponse
-	Userid         string `json:"userid"`         // 必填参数
-	Name           string `json:"name,omitempty"` // 必填参数
-	Alias          string `json:"alias,omitempty"`
-	Mobile         string `json:"mobile,omitempty"`
-	Department     []int  `json:"department,omitempty"`
-	Order          []int  `json:"order,omitempty"`
-	Position       string `json:"position,omitempty"`
-	Gender         string `json:"gender,omitempty"`
-	Email          string `json:"email,omitempty"`
-	IsLeaderInDept []int  `json:"is_leader_in_dept,omitempty"`
-	Enable         *int   `json:"enable,omitempty"`
-	AvatarMediaid  string `json:"avatar_mediaid,omitempty"`
-	Telephone      string `json:"telephone,omitempty"`
-	Address        string `json:"address,omitempty"`
-	MainDepartment *int   `json:"main_department,omitempty"`
-	Extattr        struct {
-		Attrs []struct {
-			Type int    `json:"type,omitempty"`
-			Name string `json:"name,omitempty"`
-			Text struct {
-				Value string `json:"value,omitempty"`
-			} `json:"text,omitempty,omitempty"`
-			Web struct {
-				URL   string `json:"url,omitempty"`
-				Title string `json:"title,omitempty"`
-			} `json:"web,omitempty,omitempty"`
-		} `json:"attrs,omitempty"`
-	} `json:"extattr,omitempty"`
-	ToInvite         *bool  `json:"to_invite,omitempty"`
-	ExternalPosition string `json:"external_position,omitempty"`
-	ExternalProfile  struct {
-		ExternalCorpName string `json:"external_corp_name,omitempty"`
-		ExternalAttr     []struct {
-			Type int    `json:"type,omitempty"`
-			Name string `json:"name,omitempty"`
-			Text struct {
-				Value string `json:"value,omitempty"`
-			} `json:"text,omitempty,omitempty"`
-			Web struct {
-				URL   string `json:"url,omitempty"`
-				Title string `json:"title,omitempty"`
-			} `json:"web,omitempty,omitempty"`
-			Miniprogram struct {
-				Appid    string `json:"appid,omitempty"`
-				Pagepath string `json:"pagepath,omitempty"`
-				Title    string `json:"title,omitempty"`
-			} `json:"miniprogram,omitempty,omitempty"`
-		} `json:"external_attr,omitempty"`
-	} `json:"external_profile,omitempty"`
+	Userid           string          `json:"userid"`
+	Name             string          `json:"name"`
+	Alias            string          `json:"alias"`
+	Mobile           string          `json:"mobile"`
+	Department       []int           `json:"department"`
+	Order            []int           `json:"order"`
+	Position         string          `json:"position"`
+	Gender           string          `json:"gender"`
+	Email            string          `json:"email"`
+	IsLeaderInDept   []int           `json:"is_leader_in_dept"`
+	Enable           int             `json:"enable"`
+	AvatarMediaid    string          `json:"avatar_mediaid"`
+	Telephone        string          `json:"telephone"`
+	Address          string          `json:"address"`
+	MainDepartment   int             `json:"main_department"`
+	Extattr          Extattr         `json:"extattr"`
+	ToInvite         bool            `json:"to_invite"`
+	ExternalPosition string          `json:"external_position"`
+	ExternalProfile  ExternalProfile `json:"external_profile"`
+}
+
+type Text struct {
+	Value string `json:"value"`
+}
+
+type Web struct {
+	URL   string `json:"url"`
+	Title string `json:"title"`
+}
+
+type Attrs struct {
+	Type int    `json:"type"`
+	Name string `json:"name"`
+	Text Text   `json:"text,omitempty"`
+	Web  Web    `json:"web,omitempty"`
+}
+
+type Extattr struct {
+	Attrs []Attrs `json:"attrs"`
+}
+
+type Miniprogram struct {
+	Appid    string `json:"appid"`
+	Pagepath string `json:"pagepath"`
+	Title    string `json:"title"`
+}
+
+type ExternalAttr struct {
+	Type        int         `json:"type"`
+	Name        string      `json:"name"`
+	Text        Text        `json:"text,omitempty"`
+	Web         Web         `json:"web,omitempty"`
+	Miniprogram Miniprogram `json:"miniprogram,omitempty"`
+}
+
+type ExternalProfile struct {
+	ExternalCorpName string         `json:"external_corp_name"`
+	ExternalAttr     []ExternalAttr `json:"external_attr"`
 }
 
 type UserResp struct {

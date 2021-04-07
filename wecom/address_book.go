@@ -38,13 +38,13 @@ type User struct {
 	Gender           string          `json:"gender"`
 	Email            string          `json:"email"`
 	IsLeaderInDept   []int           `json:"is_leader_in_dept"`
-	Enable           int             `json:"enable"`
+	Enable           *int            `json:"enable"`
 	AvatarMediaid    string          `json:"avatar_mediaid"`
 	Telephone        string          `json:"telephone"`
 	Address          string          `json:"address"`
 	MainDepartment   int             `json:"main_department"`
 	Extattr          Extattr         `json:"extattr"`
-	ToInvite         bool            `json:"to_invite"`
+	ToInvite         *bool           `json:"to_invite"`
 	ExternalPosition string          `json:"external_position"`
 	ExternalProfile  ExternalProfile `json:"external_profile"`
 }

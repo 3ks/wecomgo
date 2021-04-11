@@ -180,9 +180,10 @@ func (c *Client) getAccessToken() string {
 // 判断错误码是否为 token 已过期
 // errcode: 42001 token 已过期
 // 企业微信错误码查询页面：https://open.work.weixin.qq.com/devtool/query?e=42001
+// 企业微信错误码查询页面：https://open.work.weixin.qq.com/devtool/query?e=40014 // 坑爹货，40014 也表示 token 过期
 // 企业微信全局错误码：https://open.work.weixin.qq.com/api/doc/90000/90139/90313
 func (c *Client) tokenExpired(result iBaseResponse) bool {
-	if result.GetErrCode() == 42001 {
+	if result.GetErrCode() == 42001 || result.GetErrCode() == 40014 {
 		return true
 	}
 	return false

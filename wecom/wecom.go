@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -56,6 +55,9 @@ type Client struct {
 
 	// HTTP client
 	client *http.Client
+
+	// 是否打印 payload
+	printPayload bool
 
 	comm service
 
@@ -110,7 +112,7 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 	}
 
 	// body
-	var buf io.ReadWriter
+	var buf *bytes.Buffer
 	if body != nil {
 		buf = &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
@@ -118,6 +120,9 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 		err := enc.Encode(body)
 		if err != nil {
 			return nil, err
+		}
+		if c.printPayload {
+			fmt.Printf("%s\n", buf.String())
 		}
 	}
 

@@ -34,3 +34,17 @@ func NewWithHTTPClientOption(client *http.Client) options {
 		Client: client,
 	}
 }
+
+type optPrintPayload struct {
+	printPayload bool
+}
+
+func (o *optPrintPayload) applyOption(client *Client) {
+	client.printPayload = o.printPayload
+}
+
+func NewWithPrintPayloadOption() options {
+	return &optPrintPayload{
+		printPayload: true,
+	}
+}

@@ -28,25 +28,25 @@ func (b *addressService) WithContext(ctx context.Context) *addressService {
 // https://work.weixin.qq.com/api/doc/90000/90135/90195
 type User struct {
 	baseResponse
-	Userid           string          `json:"userid"`
-	Name             string          `json:"name"`
-	Alias            string          `json:"alias"`
-	Mobile           string          `json:"mobile"`
-	Department       []int           `json:"department"`
-	Order            []int           `json:"order"`
-	Position         string          `json:"position"`
-	Gender           string          `json:"gender"`
-	Email            string          `json:"email"`
-	IsLeaderInDept   []int           `json:"is_leader_in_dept"`
-	Enable           *int            `json:"enable,omitempty"`
-	AvatarMediaid    string          `json:"avatar_mediaid"`
-	Telephone        string          `json:"telephone"`
-	Address          string          `json:"address"`
-	MainDepartment   int             `json:"main_department"`
-	Extattr          *Extattr        `json:"extattr,omitempty"`
-	ToInvite         *bool           `json:"to_invite,omitempty"`
-	ExternalPosition string          `json:"external_position"`
-	ExternalProfile  ExternalProfile `json:"external_profile"`
+	Userid           string           `json:"userid"`
+	Name             string           `json:"name"`
+	Alias            string           `json:"alias"`
+	Mobile           string           `json:"mobile"`
+	Department       []int            `json:"department"`
+	Order            []int            `json:"order"`
+	Position         string           `json:"position"`
+	Gender           string           `json:"gender"`
+	Email            string           `json:"email"`
+	IsLeaderInDept   []int            `json:"is_leader_in_dept"`
+	Enable           *int             `json:"enable,omitempty"`
+	AvatarMediaid    string           `json:"avatar_mediaid"`
+	Telephone        string           `json:"telephone"`
+	Address          string           `json:"address"`
+	MainDepartment   int              `json:"main_department"`
+	Extattr          *Extattr         `json:"extattr,omitempty"`
+	ToInvite         *bool            `json:"to_invite,omitempty"`
+	ExternalPosition string           `json:"external_position"`
+	ExternalProfile  *ExternalProfile `json:"external_profile,omitempty"`
 }
 
 type Text struct {

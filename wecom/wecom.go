@@ -123,9 +123,15 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 			return nil, err
 		}
 		if c.printPayload {
-			tmp := &bytes.Buffer{}
-			_, _ = io.Copy(tmp, buf)
-			fmt.Printf("payload: %s\n", tmp.String())
+			p := &bytes.Buffer{}
+			enc := json.NewEncoder(buf)
+			enc.SetEscapeHTML(false)
+			err = enc.Encode(body)
+			if err != nil {
+				fmt.Printf("payload: %s\n", "failed")
+			} else {
+				fmt.Printf("payload: %s\n", p.String())
+			}
 		}
 	}
 

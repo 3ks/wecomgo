@@ -29,23 +29,23 @@ func (b *addressService) WithContext(ctx context.Context) *addressService {
 type User struct {
 	baseResponse
 	Userid           string           `json:"userid"`
-	Name             string           `json:"name"`
-	Alias            string           `json:"alias"`
-	Mobile           string           `json:"mobile"`
-	Department       []int            `json:"department"`
-	Order            []int            `json:"order"`
-	Position         string           `json:"position"`
-	Gender           string           `json:"gender"`
-	Email            string           `json:"email"`
-	IsLeaderInDept   []int            `json:"is_leader_in_dept"`
+	Name             string           `json:"name,omitempty"`
+	Alias            string           `json:"alias,omitempty"`
+	Mobile           string           `json:"mobile,omitempty"`
+	Department       []int            `json:"department,omitempty"`
+	Order            []int            `json:"order,omitempty"`
+	Position         string           `json:"position,omitempty"`
+	Gender           string           `json:"gender,omitempty"`
+	Email            string           `json:"email,omitempty"`
+	IsLeaderInDept   []int            `json:"is_leader_in_dept,omitempty"`
 	Enable           *int             `json:"enable,omitempty"`
-	AvatarMediaid    string           `json:"avatar_mediaid"`
-	Telephone        string           `json:"telephone"`
-	Address          string           `json:"address"`
-	MainDepartment   int              `json:"main_department"`
+	AvatarMediaid    string           `json:"avatar_mediaid,omitempty"`
+	Telephone        string           `json:"telephone,omitempty"`
+	Address          string           `json:"address,omitempty"`
+	MainDepartment   int              `json:"main_department,omitempty"`
 	Extattr          *Extattr         `json:"extattr,omitempty"`
 	ToInvite         *bool            `json:"to_invite,omitempty"`
-	ExternalPosition string           `json:"external_position"`
+	ExternalPosition string           `json:"external_position,omitempty"`
 	ExternalProfile  *ExternalProfile `json:"external_profile,omitempty"`
 }
 

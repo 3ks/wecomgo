@@ -200,5 +200,9 @@ func (c *Client) tokenExpired(result iBaseResponse) bool {
 	if result.GetErrCode() == 42001 || result.GetErrCode() == 40014 {
 		return true
 	}
+	// 同时包含关键字 invalid token，也视为过期
+	if strings.Contains(result.GetErrMsg(), "invalid") && strings.Contains(result.GetErrMsg(), "token") {
+		return true
+	}
 	return false
 }

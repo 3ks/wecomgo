@@ -124,7 +124,7 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 		}
 		if c.printPayload {
 			p := &bytes.Buffer{}
-			enc := json.NewEncoder(buf)
+			enc := json.NewEncoder(p)
 			enc.SetEscapeHTML(false)
 			err = enc.Encode(body)
 			if err != nil {

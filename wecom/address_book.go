@@ -59,8 +59,8 @@ type Web struct {
 }
 
 type Attrs struct {
-	Type int    `json:"type"`
-	Name string `json:"name"`
+	Type int    `json:"type,omitempty"`
+	Name string `json:"name,omitempty"`
 	Text Text   `json:"text,omitempty"`
 	Web  Web    `json:"web,omitempty"`
 }
@@ -76,16 +76,16 @@ type Miniprogram struct {
 }
 
 type ExternalAttr struct {
-	Type        int         `json:"type"`
-	Name        string      `json:"name"`
+	Type        int         `json:"type,omitempty"`
+	Name        string      `json:"name,omitempty"`
 	Text        Text        `json:"text,omitempty"`
 	Web         Web         `json:"web,omitempty"`
 	Miniprogram Miniprogram `json:"miniprogram,omitempty"`
 }
 
 type ExternalProfile struct {
-	ExternalCorpName string         `json:"external_corp_name"`
-	ExternalAttr     []ExternalAttr `json:"external_attr"`
+	ExternalCorpName string         `json:"external_corp_name,omitempty"`
+	ExternalAttr     []ExternalAttr `json:"external_attr,omitempty"`
 }
 
 type UserResp struct {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -112,7 +113,7 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 	}
 
 	// body
-	var buf *bytes.Buffer
+	var buf io.ReadWriter
 	if body != nil {
 		buf = &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
@@ -122,7 +123,9 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 			return nil, err
 		}
 		if c.printPayload {
-			fmt.Printf("%s\n", buf.String())
+			tmp := &bytes.Buffer{}
+			_, _ = io.Copy(tmp, buf)
+			fmt.Printf("payload: %s\n", tmp.String())
 		}
 	}
 

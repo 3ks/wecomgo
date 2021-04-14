@@ -43,7 +43,7 @@ type User struct {
 	Telephone        string          `json:"telephone"`
 	Address          string          `json:"address"`
 	MainDepartment   int             `json:"main_department"`
-	Extattr          Extattr         `json:"extattr"`
+	Extattr          *Extattr        `json:"extattr,omitempty"`
 	ToInvite         *bool           `json:"to_invite,omitempty"`
 	ExternalPosition string          `json:"external_position"`
 	ExternalProfile  ExternalProfile `json:"external_profile"`

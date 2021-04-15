@@ -59,6 +59,8 @@ type Client struct {
 
 	// 是否打印 payload
 	printPayload bool
+	// 默认为 0，即不进行重试
+	maxRetryTimes int
 
 	comm service
 

@@ -48,3 +48,17 @@ func NewWithPrintPayloadOption() options {
 		printPayload: true,
 	}
 }
+
+type optMaxRetryTimes struct {
+	maxRetryTimes int
+}
+
+func (o *optMaxRetryTimes) applyOption(client *Client) {
+	client.maxRetryTimes = o.maxRetryTimes
+}
+
+func NewWithMaxRetryTimesOption(maxRetryTimes int) options {
+	return &optMaxRetryTimes{
+		maxRetryTimes: maxRetryTimes,
+	}
+}

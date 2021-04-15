@@ -152,7 +152,6 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 }
 
 func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
-	maxFailCount := 10
 	failCount := 0
 	for {
 		if req.URL.Path != pathGetToken {
@@ -164,7 +163,7 @@ func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
 		resp, err := c.client.Do(req)
 		if err != nil {
 			failCount++
-			if failCount < maxFailCount {
+			if failCount < c.maxRetryTimes {
 				continue
 			}
 			return err
@@ -174,7 +173,7 @@ func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
 		if err != nil {
 			_ = resp.Body.Close()
 			failCount++
-			if failCount < maxFailCount {
+			if failCount < c.maxRetryTimes {
 				continue
 			}
 			return err
@@ -184,7 +183,7 @@ func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
 		err = json.Unmarshal(data, result)
 		if err != nil {
 			failCount++
-			if failCount < maxFailCount {
+			if failCount < c.maxRetryTimes {
 				continue
 			}
 			return fmt.Errorf("response body: %s, unmarhsal err: %v", string(data), err)

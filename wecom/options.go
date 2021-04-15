@@ -43,9 +43,9 @@ func (o *optPrintPayload) applyOption(client *Client) {
 	client.printPayload = o.printPayload
 }
 
-func NewWithPrintPayloadOption() options {
+func NewWithPrintPayloadOption(printPayload bool) options {
 	return &optPrintPayload{
-		printPayload: true,
+		printPayload: printPayload,
 	}
 }
 

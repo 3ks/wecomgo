@@ -57,8 +57,8 @@ func (o *optMaxRetryTimes) applyOption(client *Client) {
 	client.maxRetryTimes = o.maxRetryTimes
 }
 
-func NewWithMaxRetryTimesOption(maxRetryTimes int) options {
+func NewWithMaxRetryTimesOption(maxRetryTimes uint) options {
 	return &optMaxRetryTimes{
-		maxRetryTimes: maxRetryTimes,
+		maxRetryTimes: int(maxRetryTimes),
 	}
 }

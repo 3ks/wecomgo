@@ -152,7 +152,6 @@ func (c *Client) newRequest(httpMethod, path string, body interface{}, queryStri
 }
 
 func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
-	failCount := 0
 	for {
 		if req.URL.Path != pathGetToken {
 			q := req.URL.Query()
@@ -162,30 +161,18 @@ func (c *Client) do(req *http.Request, result iBaseResponse) (err error) {
 
 		resp, err := c.client.Do(req)
 		if err != nil {
-			failCount++
-			if failCount < c.maxRetryTimes {
-				continue
-			}
 			return err
 		}
 
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			_ = resp.Body.Close()
-			failCount++
-			if failCount < c.maxRetryTimes {
-				continue
-			}
 			return err
 		}
 		_ = resp.Body.Close()
 
 		err = json.Unmarshal(data, result)
 		if err != nil {
-			failCount++
-			if failCount < c.maxRetryTimes {
-				continue
-			}
 			return fmt.Errorf("response body: %s, unmarhsal err: %v", string(data), err)
 		}
 		// token 已过期

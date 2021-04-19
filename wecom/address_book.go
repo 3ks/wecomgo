@@ -95,61 +95,99 @@ type UserResp struct {
 // 通讯录：创建成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90195
 func (b *addressService) CreateMember(user *User) (result *UserResp, err error) {
-	req, err := b.client.newRequest(http.MethodPost, pathUserCreate, user)
-	if err != nil {
-		return nil, err
+	failCount := -1
+	for failCount < b.client.maxRetryTimes {
+		// 默认尝试一次，即不进行失败重试
+		failCount++
+
+		// 每次请求重新生成 request
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserCreate, user)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(UserResp)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
 	}
-	result = new(UserResp)
-	err = (*service)(b).doRequest(req, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	// 失败，返回最后一次请求的 err
+	return nil, err
 }
 
 // 通讯录：读取（单个）成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90196
 func (b *addressService) GetMember(userID string) (result *User, err error) {
-	req, err := b.client.newRequest(http.MethodPost, pathUserGet, nil, "userid="+userID)
-	if err != nil {
-		return nil, err
+	failCount := -1
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserGet, nil, "userid="+userID)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(User)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
 	}
-	result = new(User)
-	err = (*service)(b).doRequest(req, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	// 失败，返回最后一次请求的 err
+	return nil, err
 }
 
 // 通讯录：更新成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90197
 func (b *addressService) UpdateMember(user *User) (result *UserResp, err error) {
-	req, err := b.client.newRequest(http.MethodPost, pathUserUpdate, user)
-	if err != nil {
-		return nil, err
+	failCount := -1
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserUpdate, user)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(UserResp)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
 	}
-	result = new(UserResp)
-	err = (*service)(b).doRequest(req, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	// 失败，返回最后一次请求的 err
+	return nil, err
 }
 
 // 通讯录：删除成员
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90197
 func (b *addressService) DeleteMember(userID string) (result *UserResp, err error) {
-	req, err := b.client.newRequest(http.MethodPost, pathUserDelete, nil, "userid="+userID)
-	if err != nil {
-		return nil, err
+	failCount := -1
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserDelete, nil, "userid="+userID)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(UserResp)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
 	}
-	result = new(UserResp)
-	err = (*service)(b).doRequest(req, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	// 失败，返回最后一次请求的 err
+	return nil, err
 }
 
 type invite struct {
@@ -159,17 +197,26 @@ type invite struct {
 // 通讯录：批量邀请成员
 // 参考链接：https://open.work.weixin.qq.com/api/doc/90000/90135/90975
 func (b *addressService) InviteMember(userID []string) (result *UserResp, err error) {
-	body := invite{User: userID}
-	req, err := b.client.newRequest(http.MethodPost, pathUserInvite, body)
-	if err != nil {
-		return nil, err
+	failCount := -1
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		body := invite{User: userID}
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserInvite, body)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(UserResp)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
 	}
-	result = new(UserResp)
-	err = (*service)(b).doRequest(req, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	// 失败，返回最后一次请求的 err
+	return nil, err
 }
 
 // 部门列表
@@ -188,14 +235,23 @@ type Department struct {
 // 通讯录：获取部门列表
 // 参考链接：https://open.work.weixin.qq.com/api/doc/90000/90135/90208
 func (b *addressService) DepartmentList(departmentID int) (result *DepartmentList, err error) {
-	req, err := b.client.newRequest(http.MethodGet, pathDepartmentList, nil, fmt.Sprintf("id=%d", departmentID))
-	if err != nil {
-		return nil, err
+	failCount := -1
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodGet, pathDepartmentList, nil, fmt.Sprintf("id=%d", departmentID))
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(DepartmentList)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
 	}
-	result = new(DepartmentList)
-	err = (*service)(b).doRequest(req, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	// 失败，返回最后一次请求的 err
+	return nil, err
 }

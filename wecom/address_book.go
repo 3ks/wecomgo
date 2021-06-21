@@ -149,7 +149,7 @@ type SimpleUserList struct {
 }
 
 type SimpleUser struct {
-	Userid     int    `json:"userid"`
+	Userid     string `json:"userid"`
 	Name       string `json:"name"`
 	Department []int  `json:"department"`
 }

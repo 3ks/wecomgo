@@ -12,7 +12,8 @@ const (
 	pathUserGet        = "/cgi-bin/user/get"
 	pathUserUpdate     = "/cgi-bin/user/update"
 	pathUserDelete     = "/cgi-bin/user/delete"
-	pathUserList       = "/cgi-bin/user/simplelist"
+	pathUserSimpleList = "/cgi-bin/user/simplelist"
+	pathUserList       = "/cgi-bin/user/list"
 	pathUserInvite     = "/cgi-bin/batch/invite"
 	pathDepartmentList = "/cgi-bin/department/list"
 )
@@ -154,7 +155,7 @@ type SimpleUser struct {
 	Department []int  `json:"department"`
 }
 
-// ListMember 通讯录：读取（单个）成员
+// ListMember 通讯录：列出成员简单信息
 // 参考链接：https://work.weixin.qq.com/api/doc/90000/90135/90196
 // departmentID 部门ID，根部门填 1
 // recursive 是否递归获取子部门成员，0 表示不需要递归获取，否则表示需要递归获取
@@ -172,11 +173,58 @@ func (b *addressService) ListMember(departmentID, recursive int) (result *Simple
 	for failCount < b.client.maxRetryTimes {
 		failCount++
 		var req *http.Request
-		req, err = b.client.newRequest(http.MethodPost, pathUserList, nil, fmt.Sprintf("department_id=%d", departmentID), fmt.Sprintf("fetch_child=%d", recursive))
+		req, err = b.client.newRequest(http.MethodPost, pathUserSimpleList, nil, fmt.Sprintf("department_id=%d", departmentID), fmt.Sprintf("fetch_child=%d", recursive))
 		if err != nil {
 			continue // 如果循环结束，则会返回该 err
 		}
 		result = new(SimpleUserList)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
+	}
+	// 失败，返回最后一次请求的 err
+	return nil, err
+}
+
+type UserList struct {
+	baseResponse
+	Userlist []SimpleUserWithMainDepartment `json:"userlist"`
+}
+
+type SimpleUserWithMainDepartment struct {
+	Userid         string `json:"userid"`
+	Name           string `json:"name"`
+	Department     []int  `json:"department"`
+	MainDepartment int    `json:"main_department"`
+	// TODO 其他字段
+}
+
+// ListMembers 通讯录：列出成员详情
+// 参考链接：https://developer.work.weixin.qq.com/document/path/90201
+// departmentID 部门ID，根部门填 1
+// recursive 是否递归获取子部门成员，0 表示不需要递归获取，否则表示需要递归获取
+func (b *addressService) ListMembers(departmentID, recursive int) (result *UserList, err error) {
+	failCount := -1
+	if departmentID < 1 {
+		return nil, fmt.Errorf("invalid department id: %d", departmentID)
+	}
+	// 只要不为0，则置为1
+	if recursive != 0 {
+		recursive = 1
+	}
+
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserList, nil, fmt.Sprintf("department_id=%d", departmentID), fmt.Sprintf("fetch_child=%d", recursive))
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(UserList)
 		err = (*service)(b).doRequest(req, result)
 		if err != nil {
 			continue // 如果循环结束，则会返回该 err

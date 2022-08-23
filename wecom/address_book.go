@@ -49,6 +49,7 @@ type User struct {
 	ToInvite         *bool            `json:"to_invite,omitempty"`
 	ExternalPosition string           `json:"external_position,omitempty"`
 	ExternalProfile  *ExternalProfile `json:"external_profile,omitempty"`
+	DirectLeader     []string         `json:"direct_leader,omitempty"`
 }
 
 type Text struct {

@@ -190,6 +190,45 @@ func (b *addressService) ListMember(departmentID, recursive int) (result *Simple
 	return nil, err
 }
 
+type DetailUserList struct {
+	baseResponse
+	Userlist []User `json:"userlist"`
+}
+
+// ListMemberDetail 通讯录：列出成员详情
+// 参考链接：https://developer.work.weixin.qq.com/document/path/90201
+// departmentID 部门ID，根部门填 1
+// recursive 是否递归获取子部门成员，0 表示不需要递归获取，否则表示需要递归获取
+func (b *addressService) ListMemberDetail(departmentID, recursive int) (result *DetailUserList, err error) {
+	failCount := -1
+	if departmentID < 1 {
+		return nil, fmt.Errorf("invalid department id: %d", departmentID)
+	}
+	// 只要不为0，则置为1
+	if recursive != 0 {
+		recursive = 1
+	}
+
+	// 默认尝试一次，即不进行失败重试
+	for failCount < b.client.maxRetryTimes {
+		failCount++
+		var req *http.Request
+		req, err = b.client.newRequest(http.MethodPost, pathUserList, nil, fmt.Sprintf("department_id=%d", departmentID), fmt.Sprintf("fetch_child=%d", recursive))
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		result = new(DetailUserList)
+		err = (*service)(b).doRequest(req, result)
+		if err != nil {
+			continue // 如果循环结束，则会返回该 err
+		}
+		// 成功，return
+		return result, nil
+	}
+	// 失败，返回最后一次请求的 err
+	return nil, err
+}
+
 type UserList struct {
 	baseResponse
 	Userlist []SimpleUserWithMainDepartment `json:"userlist"`
